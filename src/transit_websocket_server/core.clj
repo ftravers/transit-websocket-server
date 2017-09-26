@@ -1,10 +1,11 @@
-(ns websocket-server.core
+(ns transit-websocket-server.core
   (:require [org.httpkit.server :as http]
             [taoensso.timbre :as log]
             [cognitect.transit :as transit])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn json->edn [json]
+  (log/debug "Incoming JSON: " json)
   (-> json
       .getBytes
       ByteArrayInputStream.
@@ -12,6 +13,7 @@
       transit/read))
 
 (defn edn->json [edn]
+  (log/debug "Incoming EDN: " edn)
   (let [out (ByteArrayOutputStream. 4096)
         writer (transit/writer out :json)]
     (transit/write writer edn)
@@ -26,12 +28,14 @@
      channel
      (fn [json-data]
        (if (http/websocket? channel)
-         (let [data (json->edn json-data)
-               resp (cb data)
-               json-resp (edn->json resp)]
-           (log/debug "RECV: " data)
-           (log/debug "RESP: " resp)
-           (http/send! channel json-resp)))))))
+         (do
+           (log/debug "WS Server Recvd Msg: " json-data)
+           (let [data (json->edn json-data)
+                 resp (cb data)
+                 json-resp (edn->json resp)]
+             (log/debug "RECV: " data)
+             (log/debug "RESP: " resp)
+             (http/send! channel json-resp))))))))
 
 (defn start-ws-server [port callback]
   (http/run-server (partial websocket-server callback)

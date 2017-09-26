@@ -1,11 +1,11 @@
 (ns websocket-server.core-test
-  (:require [websocket-server.core :refer [start-ws-server send!]]
+  (:require [websocket-server.core :refer [start-ws-server]]
             [clojure.edn :as edn]))
 
 (defonce ws-server (atom nil))
 
-(defn request-handler-upcase [channel data]
-  (send! channel (clojure.string/upper-case (str data))))
+(defn request-handler-upcase [data]
+  (clojure.string/upper-case (str data)))
 
 (defn start []
   "Demonstrate how to use the websocket server library."
