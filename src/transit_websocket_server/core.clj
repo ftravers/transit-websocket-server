@@ -5,19 +5,23 @@
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn json->edn [json]
-  (log/debug "Incoming JSON: " json)
-  (-> json
-      .getBytes
-      ByteArrayInputStream.
-      (transit/reader :json)
-      transit/read))
+  (log/debug "IN JSON: " json)
+  (let [edn (-> json
+                .getBytes
+                ByteArrayInputStream.
+                (transit/reader :json)
+                transit/read)]
+    (log/debug "OUT EDN: " edn)
+    edn))
 
 (defn edn->json [edn]
-  (log/debug "Incoming EDN: " edn)
+  (log/debug "IN EDN: " edn)
   (let [out (ByteArrayOutputStream. 4096)
         writer (transit/writer out :json)]
     (transit/write writer edn)
-    (.toString out)))
+    (let [json (.toString out)]
+      (log/debug "OUT JSON: " json)
+      json)))
 
 (defn websocket-server [cb req]
   (http/with-channel req channel
@@ -33,8 +37,7 @@
            (let [data (json->edn json-data)
                  resp (cb data)
                  json-resp (edn->json resp)]
-             (log/debug "RECV: " data)
-             (log/debug "RESP: " resp)
+             (log/debug "WS Server Reply Msg: " json-resp)
              (http/send! channel json-resp))))))))
 
 (defn start-ws-server [port callback]

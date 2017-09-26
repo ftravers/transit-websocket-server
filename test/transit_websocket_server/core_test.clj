@@ -1,10 +1,12 @@
-(ns websocket-server.core-test
-  (:require [websocket-server.core :refer [start-ws-server]]
+(ns transit-websocket-server.core-test
+  (:require [transit-websocket-server.core :refer [start-ws-server]]
+            [taoensso.timbre :as log]
             [clojure.edn :as edn]))
 
 (defonce ws-server (atom nil))
 
 (defn request-handler-upcase [data]
+  (log/debug "Uppercasing data: " data)
   (clojure.string/upper-case (str data)))
 
 (defn start []
