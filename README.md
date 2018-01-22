@@ -37,6 +37,8 @@ integer value.  Then it increments that value by 10 and returns it
 back.
 
 ```clojure
+(require '[clojure.edn :as edn])
+
 (defn request-handler-add10 
   [data]
   (->> data
